@@ -57,6 +57,7 @@ members = [
 exclude = [
     "vendor/wasm-pack",
     "ofl",
+    "tow",
 ]
 
 [[bench]]
