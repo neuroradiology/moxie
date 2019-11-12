@@ -97,3 +97,10 @@ clippy-tow = "clippy --manifest-path tow/Cargo.toml --workspace"
 fmt-tow = "fmt -- tow/src/main.rs"
 test-tow = "test --manifest-path tow/Cargo.toml --workspace"
 docs-tow = "doc --manifest-path tow/Cargo.toml --workspace --no-deps"
+tow-flow = """
+watch
+    -x fmt-tow
+    -x test-tow
+    -x docs-tow
+    -x clippy-tow
+"""
