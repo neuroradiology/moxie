@@ -1,10 +1,10 @@
 on:
   push:
     branches:
-    - master
+    - main
   pull_request:
     branches:
-    - master
+    - main
 jobs:
   main:
     strategy:
@@ -71,7 +71,7 @@ jobs:
         name: website
         path: target/website
     - name: promote website to prod, ensure crates published
-      if: github.ref == 'refs/heads/master' && runner.os == 'Linux'
+      if: github.ref == 'refs/heads/main' && runner.os == 'Linux'
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       run: |
