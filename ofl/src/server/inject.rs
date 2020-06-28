@@ -4,7 +4,11 @@ use actix_web::{
     web,
 };
 use futures::stream::{Stream, StreamExt};
+use lol_html::{element, html_content::ContentType, RewriteStrSettings};
 use tracing::*;
+
+const RELOAD_ON_CHANGES: &str =
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/reloadOnChanges.js"));
 
 pub async fn reload_on_changes_into_html<B>(
     mut response: ServiceResponse<B>,
@@ -26,9 +30,17 @@ where
 
     let mut body = collect_body(response.take_body()).await;
 
-    if let Some(head_end) = body.find("</head>") {
-        info!({ position = head_end }, "inserting script tag");
-        body.insert_str(head_end, RELOAD_ON_CHANGES);
+    if let Ok(rewritten) = lol_html::rewrite_str(&body, RewriteStrSettings {
+        element_content_handlers: vec![element!("head", |head| {
+            info!("inserting script tag");
+            head.append("<script>", ContentType::Html);
+            head.append(RELOAD_ON_CHANGES, ContentType::Text);
+            head.append("</script>", ContentType::Html);
+            Ok(())
+        })],
+        ..Default::default()
+    }) {
+        body = rewritten;
     }
 
     Ok(response.map_body(|_, _| ResponseBody::Other(body.into())))
@@ -45,9 +57,3 @@ async fn collect_body(
 
     String::from_utf8(buf).unwrap()
 }
-
-const RELOAD_ON_CHANGES: &str = concat!(
-    "<script>",
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/reloadOnChanges.js")),
-    "</script>"
-);
